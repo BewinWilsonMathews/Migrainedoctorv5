@@ -1,0 +1,456 @@
+    <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Migraine Diary</title>
+    <style>
+    body { margin:0; font-family:"Inter",sans-serif; background:#f9f9f9; }
+
+    .login-container {
+      display:flex; align-items:center; justify-content:center;
+      height:100vh; background:#f9f9f9; padding:16px;
+    }
+    .login-box {
+      background:#fff; padding:24px; border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.1); width:100%; max-width:360px;
+    }
+    .login-box h2 { margin-top:0; text-align:center; color:#2563eb; font-size:22px; }
+    .field { display:flex; flex-direction:column; margin-bottom:18px; }
+    label { font-size:14px; margin-bottom:6px; color:#444; }
+    input {
+      padding:10px; border-radius:8px; border:1px solid #ccc; font-size:15px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+    }
+    /* --- OTP Buttons --- */
+    .otp-btn {
+      padding:12px 20px;
+      border:none;
+      border-radius:12px;
+      font-size:15px;
+      font-weight:600;
+      color:#fff;
+      cursor:pointer;
+      width:100%;
+      margin-top:10px;
+      background:linear-gradient(135deg,#3b82f6,#1e40af);
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      transition:all .25s ease;
+    }
+    .otp-btn:hover {
+      transform:translateY(-2px);
+      box-shadow:0 6px 16px rgba(0,0,0,0.25);
+      background:linear-gradient(135deg,#1e40af,#1d4ed8);
+    }
+
+    /* Add spacing above OTP input */
+    #otpInput {
+      margin-bottom:12px;
+    }
+
+    .error-msg { color:#dc2626; font-size:13px; margin-top:-6px; margin-bottom:10px; display:none; }
+
+      /* --- Buttons --- */
+      .btn-main {
+        padding:12px 18px; border-radius:10px; border:none;
+        background:linear-gradient(135deg,#2563eb,#1e40af);
+        color:#fff; font-weight:600; cursor:pointer; width:100%;
+        font-size:15px; box-shadow:0 4px 10px rgba(0,0,0,0.15);
+        transition:all .25s ease;
+      }
+      .btn-main:hover {
+        background:linear-gradient(135deg,#1e40af,#1d4ed8);
+        transform:translateY(-2px);
+        box-shadow:0 6px 14px rgba(0,0,0,0.2);
+      }
+      .btn-main:disabled { background:#aaa; cursor:not-allowed; }
+
+      /* --- Extra spacing for OTP input --- */
+      #otpField {
+        margin-top:16px;
+      }
+
+      .error-msg { color:#dc2626; font-size:13px; margin-top:-6px; margin-bottom:10px; display:none; }
+
+      /* --- Responsive Login --- */
+      @media (max-width:480px){
+        .login-box { padding:18px; }
+        .login-box h2 { font-size:20px; }
+        .btn-main, input { font-size:14px; }
+      }
+    </style>
+
+    <!-- Diary styles unchanged -->
+    <style>
+      :root {
+        --bg: #ffffff;
+        --card: #ffffff;
+        --muted: #f9f9f9;
+        --text: #1f2937;
+        --subtext: #6b7280;
+        --accent: #3b82f6;
+        --accent-2: #2563eb;
+        --shadow: 0 4px 12px rgba(0,0,0,.06);
+        --radius: 12px;
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Inter",ui-sans-serif,system-ui;}
+      .app{display:none;grid-template-rows:auto 1fr;height:100vh;gap:16px;padding:16px;background:var(--bg)}
+      header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+      .title{display:flex;align-items:center;gap:12px;background:var(--card);padding:10px 14px;border-radius:var(--radius);box-shadow:var(--shadow)}
+      .title h1{margin:0;font-size:22px;font-weight:800;
+        background:linear-gradient(90deg,var(--accent),var(--accent-2));
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+      .controls{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+      .month-label{min-width:140px;text-align:center;font-weight:700;color:var(--accent-2);font-size:16px}
+
+      button.icon {
+        display:inline-flex;align-items:center;justify-content:center;
+        background:#2563eb;border:none;
+        padding:10px 16px;font-size:15px;font-weight:600;
+        color:#fff;border-radius:8px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.12);
+        cursor:pointer;transition:background .2s,transform .1s;
+        white-space:nowrap;
+      }
+      button.icon:hover { background:#1e40af; }
+      button.icon:active { transform:scale(0.95); }
+      #closePanel {background:#ef4444;border-radius:50%;width:36px;height:36px;padding:0;font-size:18px;font-weight:bold;}
+      #closePanel:hover { background:#dc2626; }
+
+      .layout{display:grid;grid-template-columns:1fr;height:100%}
+      .panel{position:fixed;left:0;top:0;height:100vh;width:360px;max-width:90vw;background:var(--card);border-right:1px solid #ddd;box-shadow:10px 0 30px rgba(0,0,0,.1);transform:translateX(-100%);transition:transform .25s ease;z-index:30;display:flex;flex-direction:column}
+      .panel.open{transform:translateX(0)}
+      .panel header{padding:18px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+      .panel main{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+      .field{display:flex;flex-direction:column;gap:6px}
+      label{font-size:13px;color:var(--subtext)}
+      select,input[type=text]{background:var(--muted);border:1px solid #ccc;border-radius:12px;padding:10px;font-size:14px;box-shadow:var(--shadow)}
+      .panel .actions{margin-top:6px;display:flex;gap:8px}
+      .btn{cursor:pointer;font-weight:700;padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;box-shadow:var(--shadow)}
+      .calendar{background:var(--card);border:1px solid #ddd;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px}
+      .weekday-grid{display:grid;grid-template-columns:repeat(7,1fr);font-size:12px;color:var(--subtext);font-weight:600}
+      .day-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(70px,1fr);gap:6px;flex:1}
+      .day{border:1px solid #eee;border-radius:14px;background:var(--muted);cursor:pointer;display:flex;flex-direction:column;padding:6px;font-size:13px}
+      .day .date{font-weight:800;color:var(--accent-2)}
+      .day.other-month{opacity:.35}
+      .today{outline:2px solid var(--accent)}
+      .day.saved-high{background:#ffcccc !important;}
+      .day.saved-medium{background:#fff5b7 !important;}
+      .day.saved-low{background:#b9f6ca !important;}
+
+      @media (max-width:600px){
+        .app{padding:8px;}
+        .title h1{font-size:18px;}
+        .controls button.icon{padding:8px 12px;font-size:14px;}
+        .month-label{min-width:auto;font-size:14px;}
+        .day-grid{grid-auto-rows:minmax(60px,1fr);gap:4px;}
+      }
+  /* put this in your <style> */
+  .spinner {
+    border: 3px solid #eee;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+    </style>
+  </head>
+  <body>
+
+  <!-- LOGIN -->
+  <div class="login-container" id="loginPage">
+    <div class="login-box">
+      <h2>Patient Login</h2>
+      <div class="field">
+        <label>Patient ID</label>
+        <input type="text" id="patientId" placeholder="Enter Patient ID"/>
+        <div class="error-msg" id="patientError">Patient ID not found or error.</div>
+      </div>
+
+      <div class="field" id="mobileHintField" style="display:none;">
+        <label>Your Mobile Number</label>
+        <div id="mobileHint"></div>
+        <button class="otp-btn" id="sendOtpBtn" style="display:none;">📩 Send OTP</button>
+      </div>
+
+      <div class="field" id="otpField" style="display:none;">
+        <label>Enter OTP</label>
+        <input type="text" id="otpInput" placeholder="Enter OTP"/>
+        <button class="otp-btn" id="verifyOtpBtn">✅ Verify</button>
+      </div>
+    </div>
+  </div>
+  <!-- MIGRAINE DIARY -->
+  <div class="app" id="diaryApp">
+    <header>
+        <div class="title"><h1>Migraine Diary</h1></div>
+        <div class="controls">
+          <button class="icon" id="prev">⟨</button>
+          <div class="month-label" id="monthLabel"></div>
+          <button class="icon" id="next">⟩</button>
+          <button class="icon" id="todayBtn">Today</button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="panel" id="panel">
+          <header>
+            <h2>Day Details</h2>
+            <button class="icon" id="closePanel">✕</button>
+          </header>
+          <main>
+            <div class="field">
+              <label>Date</label>
+              <div id="selectedDate" style="font-weight:700"></div>
+            </div>
+            <!-- Q1: Duration -->
+            <div class="field">
+              <label for="duration">Duration</label>
+              <select id="duration" required>
+                <option value="">Select</option>
+                <option value="Less than 1 hour">Less than 1 hour</option>
+              </select>
+            </div>
+            <!-- Q2: Intensity -->
+            <div class="field">
+              <label for="intensity">Intensity</label>
+              <select id="intensity" required>
+                <option value="">Select</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </div>
+            <!-- Q3: Painkillers -->
+            <div class="field">
+              <label for="painkiller">Taken Painkillers?</label>
+              <select id="painkiller" required>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="field" id="painkillerDetailsField" style="display:none;">
+              <label for="painkillerDetails">Painkiller Details</label>
+              <input type="text" id="painkillerDetails" placeholder="Enter name/details"/>
+            </div>
+            <div class="actions">
+              <button class="btn" id="saveBtn">Save</button>
+            </div>
+          </main>
+        </aside>
+
+        <section class="calendar">
+          <div class="weekday-grid"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+          <div class="day-grid" id="dayGrid"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const API_TOKEN = "7897c339c442e4b:01ff7013b92aa32";
+  const API_URL = "http://51.20.128.7/api/resource/Patient/";
+
+  let patientData=null;
+  let generatedOtp=null;
+  let fetchTimeout=null;
+
+  const errorEl=document.getElementById("patientError");
+
+  document.getElementById("patientId").addEventListener("input",()=>{
+    clearTimeout(fetchTimeout);
+    errorEl.style.display="none";
+    const id=document.getElementById("patientId").value.trim();
+    if(!id) return;
+
+    // show loading spinner
+    document.getElementById("mobileHintField").style.display="block";
+    document.getElementById("mobileHint").innerHTML = 'Checking... <span class="spinner"></span>';
+    document.getElementById("sendOtpBtn").style.display = "none"; // 🔒 hide while fetching
+
+    fetchTimeout=setTimeout(async()=>{
+      try{
+        const res=await fetch(API_URL+id,{headers:{Authorization:"token "+API_TOKEN}});
+        if(!res.ok) throw new Error("Not found");
+        const json=await res.json();
+        patientData=json.data;
+        const mobile=patientData.mobile||patientData.custom_whatsapp_number;
+        if(!mobile) { 
+          errorEl.textContent="No mobile found"; 
+          errorEl.style.display="block"; 
+          document.getElementById("mobileHintField").style.display="none"; 
+          document.getElementById("sendOtpBtn").style.display = "none"; 
+          return; 
+        }
+        // ✅ Success: show digits + show OTP button
+        document.getElementById("mobileHint").textContent="*** *** "+mobile.slice(-3);
+        document.getElementById("sendOtpBtn").style.display = "inline-block";
+      }catch(e){
+        errorEl.textContent="Patient ID not found or error.";
+        errorEl.style.display="block";
+        document.getElementById("mobileHintField").style.display="none";
+        document.getElementById("sendOtpBtn").style.display = "none"; 
+      }
+    },600);
+  });
+
+  document.getElementById("sendOtpBtn").onclick=()=>{
+      if(!patientData) return;
+
+    // 🔒 hide button after click
+    document.getElementById("sendOtpBtn").style.display = "none";
+
+    // show OTP input
+    document.getElementById("otpField").style.display = "block";
+    generatedOtp=Math.floor(1000+Math.random()*9000).toString();
+    alert("Your OTP is: "+generatedOtp); // simulate SMS
+    document.getElementById("otpField").style.display="block";
+  };
+
+  document.getElementById("verifyOtpBtn").onclick=()=>{
+    const entered=document.getElementById("otpInput").value.trim();
+    if(entered===generatedOtp){
+      document.getElementById("loginPage").style.display="none";
+      document.getElementById("diaryApp").style.display="grid";
+    }else alert("Wrong OTP");
+  };
+  </script>
+
+  <script>
+  const pad = n=>String(n).padStart(2,'0');
+  const fmtKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  let view=new Date();view.setDate(1);
+  const todayKey=fmtKey(new Date());
+  let activeKey=null;
+  const NS='calendar-answers-v2';
+  const loadAll=()=>JSON.parse(localStorage.getItem(NS)||'{}');
+  const saveAll=(d)=>localStorage.setItem(NS,JSON.stringify(d));
+
+  const monthLabel=document.getElementById('monthLabel');
+  const grid=document.getElementById('dayGrid');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+  const todayBtn=document.getElementById('todayBtn');
+  const panel=document.getElementById('panel');
+  const closePanel=document.getElementById('closePanel');
+  const selectedDateEl=document.getElementById('selectedDate');
+  const duration=document.getElementById('duration');
+  const intensity=document.getElementById('intensity');
+  const painkiller=document.getElementById('painkiller');
+  const painkillerDetails=document.getElementById('painkillerDetails');
+  const painkillerDetailsField=document.getElementById('painkillerDetailsField');
+  const saveBtn=document.getElementById('saveBtn');
+
+  // Fill duration dropdown
+  for (let i = 1; i <= 24; i++) {
+    const opt = document.createElement("option");
+    opt.value = i === 1 ? "1 hour" : `${i} hours`;
+    opt.textContent = opt.value;
+    duration.appendChild(opt);
+  }
+
+  painkiller.addEventListener('change',()=>{
+    if(painkiller.value==="Yes"){
+      painkillerDetailsField.style.display="block";
+      painkillerDetails.required=true;
+    } else {
+      painkillerDetailsField.style.display="none";
+      painkillerDetails.required=false;
+    }
+  });
+
+  function render(){
+    monthLabel.textContent=`${monthNames[view.getMonth()]} ${view.getFullYear()}`;
+    grid.innerHTML='';
+    const firstDayIdx=new Date(view.getFullYear(),view.getMonth(),1).getDay();
+    const daysInMonth=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+    let dayCounter=1;
+    const answers=loadAll();
+    for(let i=0;i<42;i++){
+      const cell=document.createElement('button');
+      cell.className='day';
+      let dateObj,label,isOther=false;
+      if(i<firstDayIdx){label='';isOther=true;}
+      else if(dayCounter<=daysInMonth){dateObj=new Date(view.getFullYear(),view.getMonth(),dayCounter);label=dayCounter++;}
+      else{label='';isOther=true;}
+      if(!isOther){
+        const key=fmtKey(dateObj);
+        cell.dataset.key=key;
+        cell.innerHTML=`<div class="date">${label}</div>`;
+        if(key===todayKey) cell.classList.add('today');
+        if(answers[key]){
+          const {intensity}=answers[key];
+          if(intensity==="High") cell.classList.add('saved-high');
+          if(intensity==="Medium") cell.classList.add('saved-medium');
+          if(intensity==="Low") cell.classList.add('saved-low');
+        }
+        cell.addEventListener('click',()=>openPanel(key));
+      } else {
+        cell.innerHTML=`<div class="date">${label}</div>`;
+        cell.classList.add('other-month');
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+function openPanel(key){
+  activeKey=key;
+  const [y,m,d]=key.split('-');const date=new Date(+y,+m-1,+d);
+  selectedDateEl.textContent=`${monthNames[date.getMonth()]} ${d}, ${y}`;
+  panel.classList.add('open');
+
+  const all=loadAll();
+  const data=all[key]||{};
+
+  duration.value=data.duration||'';
+  intensity.value=data.intensity||'';
+  painkiller.value=data.painkiller||'';
+  painkillerDetails.value=data.painkillerDetails||'';
+  painkiller.dispatchEvent(new Event('change'));
+
+  if(all[key]) {
+    // 🔒 Make inputs read-only if already saved
+    duration.disabled = true;
+    intensity.disabled = true;
+    painkiller.disabled = true;
+    painkillerDetails.disabled = true;
+    saveBtn.style.display = "none"; // hide Save button
+  } else {
+    duration.disabled = false;
+    intensity.disabled = false;
+    painkiller.disabled = false;
+    painkillerDetails.disabled = false;
+    saveBtn.style.display = "block";
+  }
+}
+  function closePanelFn(){panel.classList.remove('open');activeKey=null;}
+  closePanel.addEventListener('click',closePanelFn);
+
+  saveBtn.addEventListener('click',()=>{
+    if(!activeKey) return;
+    if(!duration.value||!intensity.value||!painkiller.value||(painkiller.value==="Yes"&&!painkillerDetails.value)){alert("Please fill all required fields");return;}
+    const all=loadAll();
+    all[activeKey]={duration:duration.value,intensity:intensity.value,painkiller:painkiller.value,painkillerDetails:painkillerDetails.value};
+    saveAll(all);render();closePanelFn();
+  });
+
+  prevBtn.addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render();});
+  nextBtn.addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render();});
+  todayBtn.addEventListener('click',()=>{view=new Date();view.setDate(1);render();});
+  render();
+  </script>
+
+  </body>
+  </html>
